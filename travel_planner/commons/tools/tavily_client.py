@@ -16,7 +16,7 @@ def tavily_search(
     query: str,
     *,
     max_results: int = 5,
-    search_depth: str = "advanced"
+    search_depth: str = "advanced",
 ) -> dict:
     """
     Shared Tavily search utility.

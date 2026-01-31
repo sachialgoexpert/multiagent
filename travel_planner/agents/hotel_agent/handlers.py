@@ -1,65 +1,57 @@
 from typing import Dict, Any
 from travel_planner.commons.tools.tavily_client import tavily_search
+from travel_planner.agents.hotel_agent.llm import normalize_hotels, build_hotel_search_query
 
 
 def search_hotels(payload: Dict[str, Any]) -> Dict[str, Any]:
-    city = payload["city"]
-    checkin = payload["checkin"]
-    checkout = payload["checkout"]
-    guests = payload["guests"]
+    slots = payload["slots"]
 
-    constraints = payload.get("constraints", {})
-    areas = constraints.get("areas", [])
-    price_range = constraints.get("price_range")
-    sort_by = constraints.get("sort_by", "rating")
-    family_friendly = constraints.get("family_friendly", False)
-    min_rating = constraints.get("min_rating")
+    # ---------------------------
+    # Required slots
+    # ---------------------------
+    city = slots["to_city"]
+    days = slots["days"]
+    guests = slots["passengers"]
 
-    query_parts = [
-        f"Best hotels in {city}",
-        f"from {checkin} to {checkout}",
-        f"for {guests['adults']} adults",
-    ]
+    # ---------------------------
+    # Optional slots
+    # ---------------------------
+    area = slots.get("hotel_area")
+    budget = slots.get("budget")
+    hotel_type = slots.get("hotel_type")
+    amenities = slots.get("amenities")
 
-    if guests.get("children"):
-        query_parts.append(f"and {guests['children']} children")
+    # ---------------------------
+    # Build query
+    # ---------------------------
+    query_parts = [f"Best hotels in {city} for {days} nights"]
 
-    if areas:
-        query_parts.append(f"in areas {' or '.join(areas)}")
-
-    if family_friendly:
-        query_parts.append("family friendly hotel")
-
-    if price_range:
-        query_parts.append(f"{price_range} price range")
-
-    if sort_by == "cheapest":
-        query_parts.append("cheapest hotels")
-    elif sort_by == "rating":
-        query_parts.append("best rated hotels")
-    elif sort_by == "distance":
-        query_parts.append("near beach or attractions")
-
-    if min_rating:
-        query_parts.append(f"rating above {min_rating}")
+    if area:
+        query_parts.append(f"near {area}")
+    if budget:
+        query_parts.append(f"{budget} budget")
+    if hotel_type:
+        query_parts.append(hotel_type)
+    if amenities:
+        query_parts.append(f"with {amenities}")
 
     query = " ".join(query_parts)
 
-    raw_results = tavily_search(query, max_results=5)
+    # ---------------------------
+    # Tavily search
+    # ---------------------------
+    query = build_hotel_search_query(slots)
+    raw = tavily_search(query, max_results=5)
 
-    hotels = [
-        {
-            "title": r.get("title"),
-            "url": r.get("url"),
-            "snippet": r.get("content"),
-        }
-        for r in raw_results.get("results", [])
-    ]
+    hotels = normalize_hotels(raw.get("results", []))
 
     return {
         "city": city,
-        "checkin": checkin,
-        "checkout": checkout,
-        "constraints_applied": constraints,
-        "results": hotels[:3],
+        "options": hotels,
+        "constraints_applied": {
+            "area": area,
+            "budget": budget,
+            "hotel_type": hotel_type,
+            "amenities": amenities,
+        },
     }

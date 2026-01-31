@@ -4,3 +4,10 @@ uv.lock
 __pycache__/
 *.pyc
 *.pyo
+logs/
+*.log
+.DS_Store
+agent_pid.txt
+.venv/
+venv/
+travel_planner/.env

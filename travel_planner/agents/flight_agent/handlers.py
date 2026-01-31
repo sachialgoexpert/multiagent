@@ -1,18 +1,30 @@
 from typing import Dict, Any
+
 from travel_planner.commons.tools.tavily_client import tavily_search
+from travel_planner.agents.flight_agent.llm import normalize_flight_results,build_flight_search_query
 
 
 def search_flights(payload: Dict[str, Any]) -> Dict[str, Any]:
-    origin = payload["from"]
-    destination = payload["to"]
-    date = payload["date"]
-    passengers = payload["passengers"]
+    slots = payload["slots"]
 
-    constraints = payload.get("constraints", {})
-    time_range = constraints.get("time_range")
-    sort_by = constraints.get("sort_by", "balanced")
-    non_stop = constraints.get("non_stop", False)
+    # ---------------------------
+    # Required slots
+    # ---------------------------
+    origin = slots["from_city"]
+    destination = slots["to_city"]
+    date = slots["start_date"]
+    passengers = slots["passengers"]
 
+    # ---------------------------
+    # Optional slots
+    # ---------------------------
+    time_range = slots.get("time_range")
+    sort_by = slots.get("sort_by", "balanced")
+    non_stop = slots.get("non_stop", False)
+
+    # ---------------------------
+    # Build search query
+    # ---------------------------
     query_parts = [
         f"Best flights from {origin} to {destination}",
         f"on {date}",
@@ -35,21 +47,31 @@ def search_flights(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     query = " ".join(query_parts)
 
-    raw_results = tavily_search(query, max_results=5)
+    # ---------------------------
+    # Tavily search
+    # ---------------------------
+    query = build_flight_search_query(slots)
+    raw = tavily_search(query, max_results=10)
+    raw_results = raw.get("results", [])
 
-    flights = [
-        {
-            "title": r.get("title"),
-            "url": r.get("url"),
-            "snippet": r.get("content"),
-        }
-        for r in raw_results.get("results", [])
-    ]
+    # ---------------------------
+    # LLM normalization
+    # ---------------------------
+    options = normalize_flight_results(
+        origin=origin,
+        destination=destination,
+        date=date,
+        raw_results=raw_results,
+    )
 
     return {
         "origin": origin,
         "destination": destination,
         "date": date,
-        "constraints_applied": constraints,
-        "results": flights[:3],
+        "constraints_applied": {
+            "time_range": time_range,
+            "sort_by": sort_by,
+            "non_stop": non_stop,
+        },
+        "options": options,
     }

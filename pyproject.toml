@@ -9,6 +9,7 @@ dependencies = [
     "httpx>=0.28.1",
     "pydantic>=2.12.5",
     "python-dotenv>=1.2.1",
+    "streamlit>=1.53.1",
     "tavily-python>=0.7.21",
     "uvicorn>=0.40.0",
 ]

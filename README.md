@@ -37,3 +37,41 @@ The system plans end-to-end travel (flights, hotels, food, local transport) thro
 
 ## Architecture Overview
 
+### Start servers
+uvicorn travel_planner.agents.main_planner.app:app --host 0.0.0.0 --port 8000
+uvicorn travel_planner.agents.flight_agent.app:app --host 0.0.0.0 --port 8001
+uvicorn travel_planner.agents.food_agent.app:app --host 0.0.0.0 --port 8002
+uvicorn travel_planner.agents.hotel_agent.app:app --host 0.0.0.0 --port 8003
+uvicorn travel_planner.agents.local_travel_agent.app:app --host 0.0.0.0 --port 8004
+
+UI run
+streamlit run travel_planner/agents/main_planner/streamlit_app.py
+
+### Health Checks
+curl http://localhost:8001/health
+curl http://localhost:8002/health
+curl http://localhost:8003/health
+curl http://localhost:8004/health
+
+### Agent Cards
+curl http://localhost:8001/agent-card
+curl http://localhost:8002/agent-card
+curl http://localhost:8003/agent-card
+curl http://localhost:8004/agent-card
+
+User
+  ↓
+Planning Agent (Main Planner)
+  ├── Intent Extraction (LLM)
+  ├── Agent Discovery (/agent-card)
+  ├── Slot Aggregation (mandatory + optional)
+  ├── Question Synthesis (LLM)
+  ├── Slot Filling Loop
+  ├── Execution Orchestration
+  │     ├── FlightAgent
+  │     ├── HotelAgent
+  │     ├── FoodAgent
+  │     └── LocalTransportAgent
+  ├── Result Collection
+  ├── Cost Estimation & Optimization
+  └── Final Summary (LLM)
