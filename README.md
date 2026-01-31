@@ -1,4 +1,4 @@
-# Multi-Agent Travel Planner (Google A2A Style)
+# Multi-Agent Travel Planner 
 
 A **distributed, multi-agent travel planning system** built using **Agent-to-Agent (A2A) protocol principles**, inspired by Google-style Agent Cards and skill-based orchestration.
 
@@ -12,7 +12,7 @@ The system plans end-to-end travel (flights, hotels, food, local transport) thro
   - Each agent runs independently on its own port
   - Agents are stateless and self-describing
 
-- **Agent Cards (Google A2A style)**
+- **Agent Cards**
   - `/agent-card` endpoint for discovery
   - Skills, schemas, endpoints exposed automatically
 
