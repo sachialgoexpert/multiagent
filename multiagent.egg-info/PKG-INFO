@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: multiagent
+Version: 0.1.0
+Summary: Add your description here
+Requires-Python: >=3.13
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi>=0.128.0
+Requires-Dist: httpx>=0.28.1
+Requires-Dist: pydantic>=2.12.5
+Requires-Dist: python-dotenv>=1.2.1
+Requires-Dist: tavily-python>=0.7.21
+Requires-Dist: uvicorn>=0.40.0

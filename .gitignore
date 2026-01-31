@@ -1,0 +1,6 @@
+.env
+uv.lock
+.vscode/
+__pycache__/
+*.pyc
+*.pyo
